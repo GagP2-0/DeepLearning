@@ -14,7 +14,9 @@
 import pandas as pd
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score
+import matplotlib.pyplot as plt
 
+# --- 1. The Model Class ---
 class SimplePerceptron:
   def __init__(self, margin=0.1, learning_rate=0.01, max_iter=1000):
     self.margin = margin
@@ -109,3 +111,43 @@ perceptron.fit("https://raw.githubusercontent.com/GagP2-0/DeepLearning/refs/head
 accuracy, weighted_f1, macro_f1 = perceptron.calculate_scores("https://raw.githubusercontent.com/GagP2-0/DeepLearning/refs/heads/main/data/q1_test_data1.csv")
 # Printing the performance metrics
 print("accuracy: %.3f, macro_f1: %.3f, weighted_f1: %.3f" %(accuracy, macro_f1, weighted_f1))
+
+# --- 2. The Plotting Logic ---
+def generate_plot():
+    perceptron = SimplePerceptron(margin=0.1, learning_rate=0.01)
+    print("Training Model...")
+    perceptron.fit("https://raw.githubusercontent.com/GagP2-0/DeepLearning/refs/heads/main/data/q1_train_data1.csv")
+
+    acc, w_f1, m_f1 = perceptron.calculate_scores("https://raw.githubusercontent.com/GagP2-0/DeepLearning/refs/heads/main/data/q1_test_data1.csv")
+    print("accuracy: %.3f, macro_f1: %.3f, weighted_f1: %.3f" %(acc, m_f1, w_f1))
+
+    # B. Visualize the Scores (The Proof)
+    X_test, y_test = perceptron.load_data("https://raw.githubusercontent.com/GagP2-0/DeepLearning/refs/heads/main/data/q1_test_data1.csv")
+
+    # Calculate final confidence scores for the test set
+    test_scores = np.dot(X_test, perceptron.weights) + perceptron.bias
+
+    plt.figure(figsize=(10, 6))
+
+    # Plot Class 0 (No)
+    plt.scatter(np.where(y_test==0)[0], test_scores[y_test==0], 
+                color='red', label='Class 0 (No)', alpha=0.6)
+
+    # Plot Class 1 (Yes)
+    plt.scatter(np.where(y_test==1)[0], test_scores[y_test==1], 
+                color='blue', label='Class 1 (Yes)', alpha=0.6)
+
+    # Draw Decision Boundary and Margins
+    plt.axhline(0, color='black', linewidth=2, label='Decision Boundary (0)')
+    plt.axhline(perceptron.margin, color='green', linestyle='--', label='Safety Margin')
+    plt.axhline(-perceptron.margin, color='green', linestyle='--')
+
+    plt.title("Model Confidence Scores on Test Data", fontsize=14)
+    plt.xlabel("Test Data Sample ID")
+    plt.ylabel("Perceptron Score (Confidence)")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+# --- Run it ---
+generate_plot()
